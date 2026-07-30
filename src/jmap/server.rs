@@ -12,6 +12,7 @@ use axum::{Json, Router};
 use serde::Serialize;
 use std::sync::Arc;
 use tracing::{debug, instrument, trace};
+use crate::conf::ConfigJmap;
 
 #[derive(Serialize, Clone)]
 struct JmapServerStateWellKnown {
@@ -25,8 +26,10 @@ struct JmapServerState {
 
 impl JmapServerState {
     #[instrument]
-    fn new(base: String, session: String) -> Result<Self, serde_json::Error> {
+    fn new(config: ConfigJmap) -> Result<Self, serde_json::Error> {
         trace!("Initializing JMAP Server State");
+        let base = config.base_url.clone();
+        let session = config.base_url.clone() + &config.session.clone();
         Ok(JmapServerState {
             base,
             well_known: Json(JmapServerStateWellKnown { session }),
@@ -36,21 +39,23 @@ impl JmapServerState {
 
 pub struct JmapServer {
     data: Arc<JmapServerState>,
+    conf: ConfigJmap,
 }
 
 impl JmapServer {
     #[instrument]
-    pub fn new(base: String, session: String) -> Result<Self, serde_json::Error> {
+    pub fn new(config: ConfigJmap) -> Result<Self, serde_json::Error> {
         debug!("Initializing JMAP Server");
         Ok(JmapServer {
-            data: Arc::new(JmapServerState::new(base, session)?),
+            data: Arc::new(JmapServerState::new(config.clone())?),
+            conf: config,
         })
     }
 
     pub fn router(&self) -> Router {
         trace!("Add the router /.well-known/jmap");
         Router::new()
-            .route("/.well-known/jmap", get(jmap_well_known))
+            .route(&self.conf.well_known, get(jmap_well_known))
             .with_state(self.data.clone())
     }
 }
