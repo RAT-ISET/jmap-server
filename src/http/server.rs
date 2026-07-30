@@ -7,16 +7,9 @@
 // HTTP server.
 
 use axum::Router;
-use axum::routing::get;
 use tracing::{info, instrument, trace};
 
-pub async fn http_server_start() {
-    info!("Starting http server");
-    let app = Router::new().route("/", get("Hello, world!"));
-    HttpServer::new(8080, "0.0.0.0", app).run().await.unwrap();
-}
-
-struct HttpServer {
+pub struct HttpServer {
     port: u16,
     host: &'static str,
     router: Router,
@@ -24,12 +17,12 @@ struct HttpServer {
 
 impl HttpServer {
     #[instrument(skip(router))]
-    fn new(port: u16, host: &'static str, router: Router) -> Self {
+    pub fn new(port: u16, host: &'static str, router: Router) -> Self {
         trace!("Create a new http server");
         HttpServer { port, host, router }
     }
 
-    async fn run(self) -> Result<(), std::io::Error> {
+    pub async fn run(self) -> Result<(), std::io::Error> {
         info!("Starting http server");
         let listener = tokio::net::TcpListener::bind(
             self.host.to_string() + ":" + self.port.to_string().as_str(),

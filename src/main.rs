@@ -6,16 +6,26 @@
 // Path /src/main.rs
 // Main of the project.
 
+use axum::Router;
+use axum::routing::get;
 use tracing::info;
 use tracing_subscriber::{EnvFilter, fmt};
 
 mod http;
+mod jmap;
 
 #[tokio::main]
 async fn main() {
     init_log();
     info!("Server starting");
-    http::server::http_server_start().await;
+    http::HttpServer::new(
+        8080,
+        "0.0.0.0",
+        Router::new().route("/", get("Hello, world!")),
+    )
+    .run()
+    .await
+    .unwrap();
 }
 
 fn init_log() {
