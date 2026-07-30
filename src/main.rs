@@ -18,10 +18,14 @@ mod jmap;
 async fn main() {
     init_log();
     info!("Server starting");
+    let jmap_server =
+        jmap::JmapServer::new("http://localhost:8080".to_string(), "http://localhost:8080".to_string()).unwrap();
     http::HttpServer::new(
         &8080u16,
         "0.0.0.0",
-        Router::new().route("/", get("Hello, world!")),
+        Router::new()
+            .route("/", get("Hello, world!"))
+            .merge(jmap_server.router()),
     )
     .run()
     .await

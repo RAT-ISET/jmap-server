@@ -6,4 +6,6 @@
 // Path /src/jmap/mod.rs
 // Module for JMAP server.
 
-pub mod server;
+mod server;
+
+pub use server::JmapServer;

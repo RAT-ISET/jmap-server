@@ -24,10 +24,7 @@ impl<'a> HttpServer<'a> {
 
     pub async fn run(self) -> Result<(), std::io::Error> {
         info!("Starting http server");
-        let listener = tokio::net::TcpListener::bind(
-            (self.host, *self.port)
-        )
-        .await?;
+        let listener = tokio::net::TcpListener::bind((self.host, *self.port)).await?;
         axum::serve(listener, self.router).await?;
         Ok(())
     }
