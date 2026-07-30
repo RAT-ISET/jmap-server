@@ -6,4 +6,4 @@
 // Path /src/http/mod.rs
 // Module for HTTP server.
 
-mod server;
+pub mod server;

@@ -11,9 +11,11 @@ use tracing_subscriber::{EnvFilter, fmt};
 
 mod http;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     init_log();
     info!("Server starting");
+    http::server::http_server_start().await;
 }
 
 fn init_log() {
