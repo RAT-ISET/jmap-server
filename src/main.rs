@@ -18,8 +18,11 @@ mod jmap;
 async fn main() {
     init_log();
     info!("Server starting");
-    let jmap_server =
-        jmap::JmapServer::new("http://localhost:8080".to_string(), "http://localhost:8080".to_string()).unwrap();
+    let jmap_server = jmap::JmapServer::new(
+        "/jmap".to_string(),
+        "http://localhost:8080/jmap/session".to_string(),
+    )
+    .unwrap();
     http::HttpServer::new(
         &8080u16,
         "0.0.0.0",
