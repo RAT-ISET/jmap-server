@@ -5,5 +5,5 @@ port = 8080
 
 [jmap]
 base_url = "http://localhost:8080"
-session = "/api"
+session = "/jmap/session"
 well_known = "/.well-known/jmap"

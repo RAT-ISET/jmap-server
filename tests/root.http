@@ -1,1 +1,5 @@
+### Root
 GET http://{{host}}:{{port}}/
+
+### Well Known
+GET http://{{host}}:{{port}}/.well-known/jmap
