@@ -23,7 +23,7 @@ struct HttpServer {
 }
 
 impl HttpServer {
-    #[instrument]
+    #[instrument(skip(router))]
     fn new(port: u16, host: &'static str, router: Router) -> Self {
         trace!("Create a new http server");
         HttpServer { port, host, router }
