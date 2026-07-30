@@ -19,7 +19,7 @@ async fn main() {
     init_log();
     info!("Server starting");
     http::HttpServer::new(
-        8080,
+        &8080u16,
         "0.0.0.0",
         Router::new().route("/", get("Hello, world!")),
     )

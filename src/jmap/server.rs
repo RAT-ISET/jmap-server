@@ -5,3 +5,8 @@
 // ==============================================================
 // Path /src/jmap/server.rs
 // JMAP server.
+
+#[allow(dead_code)]
+struct JmapServer<'a> {
+    base_url: &'a str,
+}
