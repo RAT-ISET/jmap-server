@@ -3,11 +3,7 @@
 // Licensed under the MIT.
 // https://github.com/RAT-ISET/jmap-server
 // ==============================================================
-// Path /src/main.rs
-// Main of the project.
+// Path /src/http/mod.rs
+// Module for HTTP server.
 
-mod http;
-
-fn main() {
-    println!("Hello, world!");
-}
+mod server;
