@@ -24,7 +24,13 @@ pub struct ConfigJmap {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct ConfigDatabase {
+    pub file: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct Config {
     pub http: ConfigHttp,
     pub jmap: ConfigJmap,
+    pub database: ConfigDatabase,
 }

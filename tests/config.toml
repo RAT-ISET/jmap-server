@@ -7,3 +7,6 @@ port = 8080
 base_url = "http://localhost:8080"
 session = "/jmap/session"
 well_known = "/.well-known/jmap"
+
+[database]
+file = "tests/database/jmap.db"

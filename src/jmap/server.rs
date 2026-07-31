@@ -6,13 +6,13 @@
 // Path /src/jmap/server.rs
 // JMAP server.
 
+use crate::conf::ConfigJmap;
 use axum::extract::State;
 use axum::routing::get;
 use axum::{Json, Router};
 use serde::Serialize;
 use std::sync::Arc;
 use tracing::{debug, instrument, trace};
-use crate::conf::ConfigJmap;
 
 #[derive(Serialize, Clone)]
 struct JmapServerStateWellKnown {

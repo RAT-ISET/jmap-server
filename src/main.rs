@@ -13,17 +13,19 @@ use std::env;
 use std::fs::read_to_string;
 use std::process::exit;
 use std::sync::Arc;
-use tracing::{error, info, trace};
+use tracing::{debug, error, info, trace};
 use tracing_subscriber::{EnvFilter, fmt};
 
 mod conf;
 mod http;
+mod io;
 mod jmap;
 
 #[tokio::main]
 async fn main() {
     init_log();
-    trace!("Logging started");
+    debug!("Logging started");
+
     let config_path = match env::args().nth(1) {
         Some(path) => path,
         None => {
@@ -31,13 +33,15 @@ async fn main() {
             exit(1);
         }
     };
+    debug!("Configuration loading");
+    let config: Arc<Config> =
+        Arc::new(toml::from_str(read_to_string(config_path).unwrap().as_str()).unwrap());
+
+    debug!("Database loading");
+    io::database::init(&config.database).await.unwrap();
 
     info!("Server starting");
-    let config: Arc<Config> = Arc::new(toml::from_str(read_to_string(config_path).unwrap().as_str()).unwrap());
-    let jmap_server = jmap::JmapServer::new(
-        config.jmap.clone(),
-    )
-    .unwrap();
+    let jmap_server = jmap::JmapServer::new(config.jmap.clone()).unwrap();
     http::HttpServer::new(
         &config.http.port,
         &config.http.bind,

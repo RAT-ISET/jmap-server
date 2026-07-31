@@ -3,3 +3,11 @@ GET http://{{host}}:{{port}}/
 
 ### Well Known
 GET http://{{host}}:{{port}}/.well-known/jmap
+
+### Session Test A
+POST http://{{host}}:{{port}}/jmap/session
+Authorization: Bearer aaa
+
+### Session Test B
+POST http://{{host}}:{{port}}/jmap/session
+Authorization: Bearer bbb
