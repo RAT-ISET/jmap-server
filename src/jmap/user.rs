@@ -9,7 +9,7 @@
 use crate::io::database::{DatabaseTable, read_item};
 use crate::jmap::server::SERVER_ERROR;
 use axum::response::{IntoResponse, Response};
-use sqlx::{Error, SqlitePool};
+use sqlx::SqlitePool;
 use thiserror::Error;
 use tracing::error;
 

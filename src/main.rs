@@ -13,7 +13,7 @@ use std::env;
 use std::fs::read_to_string;
 use std::process::exit;
 use std::sync::Arc;
-use tracing::{debug, error, info, trace};
+use tracing::{debug, error, info};
 use tracing_subscriber::{EnvFilter, fmt};
 
 mod conf;

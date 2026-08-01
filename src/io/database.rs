@@ -7,9 +7,8 @@
 // Database linker.
 
 use crate::conf::ConfigDatabase;
-use sqlx::query::QueryAs;
-use sqlx::sqlite::{SqliteArguments, SqliteRow};
-use sqlx::{Database, FromRow, QueryBuilder, Sqlite, SqlitePool, query};
+use sqlx::sqlite::SqliteRow;
+use sqlx::{FromRow, QueryBuilder, SqlitePool};
 use std::env::current_dir;
 use tracing::debug;
 
@@ -36,7 +35,7 @@ where
     T: DatabaseTable,
 {
     format!(
-        "SELECT {} FROM {} WHERE {} = ?",
+        "SELECT {} FROM {} WHERE {} = ",
         T::COLUMN_NAME,
         T::TABLE_NAME,
         name

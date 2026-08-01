@@ -16,6 +16,7 @@ use axum::response::{IntoResponse, Response};
 use std::sync::Arc;
 use thiserror::Error;
 use tracing::{error, warn};
+use tracing::log::debug;
 
 #[derive(sqlx::FromRow)]
 pub struct TokenItem {
@@ -27,7 +28,7 @@ pub struct TokenItem {
 pub struct TokenTable;
 impl DatabaseTable for TokenTable {
     type Item = TokenItem;
-    const TABLE_NAME: &'static str = "users";
+    const TABLE_NAME: &'static str = "tokens";
     const COLUMN_NAME: &'static str = "*";
 }
 
@@ -35,6 +36,8 @@ impl DatabaseTable for TokenTable {
 pub enum TokenError {
     #[error("Missed authorization")]
     MissedAuthorization,
+    #[error("Invalid authorization")]
+    InvalidAuthorization,
     #[error("User not found")]
     NotFoundUser,
     #[error("Database error: {0}")]
@@ -44,7 +47,9 @@ pub enum TokenError {
 impl IntoResponse for TokenError {
     fn into_response(self) -> Response {
         match self {
-            TokenError::MissedAuthorization | TokenError::NotFoundUser => {
+            TokenError::MissedAuthorization
+            | TokenError::InvalidAuthorization
+            | TokenError::NotFoundUser => {
                 warn!("{}", self);
                 (
                     StatusCode::UNAUTHORIZED,
@@ -66,8 +71,11 @@ fn get_token(parts: &mut Parts) -> Result<BearerToken, TokenError> {
         parts
             .headers
             .get(AUTHORIZATION)
-            .and_then(|auth| auth.to_str().ok())
             .ok_or(TokenError::MissedAuthorization)?
+            .to_str()
+            .map_err(|_| TokenError::InvalidAuthorization)?
+            .strip_prefix("Bearer ")
+            .ok_or(TokenError::InvalidAuthorization)?
             .to_string(),
     ))
 }
@@ -89,8 +97,11 @@ impl FromRequestParts<Arc<JmapServerState>> for TokenList {
         state: &Arc<JmapServerState>,
     ) -> Result<Self, Self::Rejection> {
         let token = get_token(parts)?.0;
-        Ok(TokenList(
-            read_all::<TokenTable>("token", token, &state.database).await?,
-        ))
+        let users = read_all::<TokenTable>("token", token, &state.database).await?;
+        if users.is_empty() {
+            Err(TokenError::NotFoundUser)
+        } else {
+            Ok(TokenList(users))
+        }
     }
 }

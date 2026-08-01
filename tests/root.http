@@ -7,12 +7,12 @@ GET http://{{host}}:{{port}}/.well-known/jmap
 
 ### Session Test 1A
 GET http://{{host}}:{{port}}/jmap/session
-Authorization: Bearer text123
+Authorization: Bearer test123
 
 ### Session Test 1B
 GET http://{{host}}:{{port}}/jmap/session
-Authorization: Bearer text222
+Authorization: Bearer test222
 
 ### Session Test 2
 GET http://{{host}}:{{port}}/jmap/session
-Authorization: Bearer text321
+Authorization: Bearer test321
