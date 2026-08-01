@@ -7,33 +7,32 @@
 // JMAP server.
 
 use crate::conf::ConfigJmap;
-use axum::extract::State;
+use crate::jmap::apis;
+use axum::Router;
+use axum::http::{HeaderName, StatusCode, header};
+use axum::response::Redirect;
 use axum::routing::get;
-use axum::{Json, Router};
-use serde::Serialize;
+use sqlx::SqlitePool;
 use std::sync::Arc;
 use tracing::{debug, instrument, trace};
 
-#[derive(Serialize, Clone)]
-struct JmapServerStateWellKnown {
-    session: String,
-}
+pub const SERVER_ERROR: (StatusCode, [(HeaderName, &'static str); 1], &'static str) = (
+    StatusCode::INTERNAL_SERVER_ERROR,
+    [(header::CONTENT_TYPE, "application/json")],
+    "{\"type\": \"serverFail\",\"description\": \"Internal server error\"}",
+);
 
-struct JmapServerState {
-    base: String,
-    well_known: Json<JmapServerStateWellKnown>,
+pub struct JmapServerState {
+    pub base: String,
+    pub database: SqlitePool,
 }
 
 impl JmapServerState {
     #[instrument]
-    fn new(config: ConfigJmap) -> Result<Self, serde_json::Error> {
+    fn new(config: ConfigJmap, database: SqlitePool) -> Result<Self, serde_json::Error> {
         trace!("Initializing JMAP Server State");
         let base = config.base_url.clone();
-        let session = config.base_url.clone() + &config.session.clone();
-        Ok(JmapServerState {
-            base,
-            well_known: Json(JmapServerStateWellKnown { session }),
-        })
+        Ok(JmapServerState { base, database })
     }
 }
 
@@ -44,10 +43,10 @@ pub struct JmapServer {
 
 impl JmapServer {
     #[instrument]
-    pub fn new(config: ConfigJmap) -> Result<Self, serde_json::Error> {
+    pub fn new(config: ConfigJmap, database: SqlitePool) -> Result<Self, serde_json::Error> {
         debug!("Initializing JMAP Server");
         Ok(JmapServer {
-            data: Arc::new(JmapServerState::new(config.clone())?),
+            data: Arc::new(JmapServerState::new(config.clone(), database)?),
             conf: config,
         })
     }
@@ -55,11 +54,16 @@ impl JmapServer {
     pub fn router(&self) -> Router {
         trace!("Add the router /.well-known/jmap");
         Router::new()
-            .route(&self.conf.well_known, get(jmap_well_known))
+            .route(
+                "/.well-known/jmap",
+                get(Redirect::temporary(
+                    (self.conf.root.clone() + "/session").as_str(),
+                )),
+            )
+            .route(
+                (self.conf.root.clone() + "/session").as_str(),
+                get(apis::session::handle),
+            )
             .with_state(self.data.clone())
     }
-}
-
-async fn jmap_well_known(state: State<Arc<JmapServerState>>) -> Json<JmapServerStateWellKnown> {
-    state.well_known.clone()
 }

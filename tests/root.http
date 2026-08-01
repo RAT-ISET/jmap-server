@@ -2,12 +2,17 @@
 GET http://{{host}}:{{port}}/
 
 ### Well Known
+# @no-redirect
 GET http://{{host}}:{{port}}/.well-known/jmap
 
-### Session Test A
-POST http://{{host}}:{{port}}/jmap/session
-Authorization: Bearer aaa
+### Session Test 1A
+GET http://{{host}}:{{port}}/jmap/session
+Authorization: Bearer text123
 
-### Session Test B
-POST http://{{host}}:{{port}}/jmap/session
-Authorization: Bearer bbb
+### Session Test 1B
+GET http://{{host}}:{{port}}/jmap/session
+Authorization: Bearer text222
+
+### Session Test 2
+GET http://{{host}}:{{port}}/jmap/session
+Authorization: Bearer text321

@@ -711,10 +711,10 @@ name = "jmap-server"
 version = "0.1.0"
 dependencies = [
  "axum",
- "log",
  "serde",
  "serde_json",
  "sqlx",
+ "thiserror",
  "tokio",
  "toml",
  "tracing",

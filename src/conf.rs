@@ -19,8 +19,7 @@ pub struct ConfigHttp {
 #[derive(Deserialize, Debug, Clone)]
 pub struct ConfigJmap {
     pub base_url: String,
-    pub session: String,
-    pub well_known: String,
+    pub root: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]

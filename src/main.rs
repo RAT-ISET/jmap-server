@@ -38,10 +38,10 @@ async fn main() {
         Arc::new(toml::from_str(read_to_string(config_path).unwrap().as_str()).unwrap());
 
     debug!("Database loading");
-    io::database::init(&config.database).await.unwrap();
+    let database = io::database::init(&config.database).await.unwrap();
 
     info!("Server starting");
-    let jmap_server = jmap::JmapServer::new(config.jmap.clone()).unwrap();
+    let jmap_server = jmap::JmapServer::new(config.jmap.clone(), database).unwrap();
     http::HttpServer::new(
         &config.http.port,
         &config.http.bind,
