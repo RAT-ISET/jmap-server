@@ -3,15 +3,15 @@
 // Licensed under the MIT.
 // https://github.com/RAT-ISET/jmap-server
 // ==============================================================
-// Path /src/jmap/server.rs
+// Path /server/src/jmap/server.rs
 // JMAP server.
 
-use crate::conf::ConfigJmap;
 use crate::jmap::apis;
 use axum::Router;
 use axum::http::{HeaderName, StatusCode, header};
 use axum::response::Redirect;
 use axum::routing::get;
+use jmap_core::conf::ConfigJmap;
 use sqlx::SqlitePool;
 use std::sync::Arc;
 use tracing::{debug, instrument, trace};

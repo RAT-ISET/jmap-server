@@ -3,12 +3,8 @@
 // Licensed under the MIT.
 // https://github.com/RAT-ISET/jmap-server
 // ==============================================================
-// Path /src/jmap/mod.rs
-// Module for JMAP server.
+// Path /server/src/model/mod.rs
+// Module for model.
 
-mod apis;
-mod server;
-mod token;
-mod user;
-
-pub use server::JmapServer;
+pub mod token;
+pub mod user;

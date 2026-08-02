@@ -3,12 +3,12 @@
 // Licensed under the MIT.
 // https://github.com/RAT-ISET/jmap-server
 // ==============================================================
-// Path /src/jmap/apis/session.rs
+// Path /server/src/jmap/apis/session.rs
 // JMAP session response.
 
 use crate::jmap::server::JmapServerState;
-use crate::jmap::token::TokenList;
-use crate::jmap::user::UserItem;
+use crate::model::token::TokenList;
+use crate::model::user::user_from;
 use axum::Json;
 use axum::extract::State;
 use axum::http::header;
@@ -40,7 +40,7 @@ pub async fn handle(state: State<Arc<JmapServerState>>, users: TokenList) -> imp
     );
     let mut accounts = HashMap::new();
     for token in users.0 {
-        let username = match UserItem::from(token.user_id, &state.database).await {
+        let username = match user_from(token.user_id, &state.database).await {
             Ok(user) => user.username,
             Err(e) => return e.into_response(),
         };

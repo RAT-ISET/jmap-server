@@ -3,34 +3,20 @@
 // Licensed under the MIT.
 // https://github.com/RAT-ISET/jmap-server
 // ==============================================================
-// Path /src/jmap/token.rs
+// Path /server/src/jmap/token.rs
 // JMAP token.
 
-use crate::io::database::{DatabaseTable, read_all};
-use crate::jmap::server::{JmapServerState, SERVER_ERROR};
+use crate::jmap::{JmapServerState, SERVER_ERROR};
 use axum::extract::FromRequestParts;
 use axum::http::header::AUTHORIZATION;
 use axum::http::request::Parts;
 use axum::http::{StatusCode, header};
 use axum::response::{IntoResponse, Response};
+use jmap_core::database::{DatabaseTable, read_all};
+use jmap_core::token::*;
 use std::sync::Arc;
 use thiserror::Error;
 use tracing::{error, warn};
-use tracing::log::debug;
-
-#[derive(sqlx::FromRow)]
-pub struct TokenItem {
-    pub id: i64,
-    pub user_id: i64,
-    pub token: String,
-}
-
-pub struct TokenTable;
-impl DatabaseTable for TokenTable {
-    type Item = TokenItem;
-    const TABLE_NAME: &'static str = "tokens";
-    const COLUMN_NAME: &'static str = "*";
-}
 
 #[derive(Error, Debug)]
 pub enum TokenError {

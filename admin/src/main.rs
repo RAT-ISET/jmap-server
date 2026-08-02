@@ -3,9 +3,10 @@
 // Licensed under the MIT.
 // https://github.com/RAT-ISET/jmap-server
 // ==============================================================
-// Path /src/http/mod.rs
-// Module for HTTP server.
+// Path /admin/src/main.rs
+// Main of the project.
 
-mod server;
+mod database;
 
-pub use server::HttpServer;
+#[tokio::main]
+async fn main() {}

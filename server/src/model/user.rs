@@ -3,28 +3,16 @@
 // Licensed under the MIT.
 // https://github.com/RAT-ISET/jmap-server
 // ==============================================================
-// Path /src/jmap/user.rs
+// Path /server/src/jmap/user.rs
 // JMAP user.
 
-use crate::io::database::{DatabaseTable, read_item};
-use crate::jmap::server::SERVER_ERROR;
+use crate::jmap::SERVER_ERROR;
 use axum::response::{IntoResponse, Response};
+use jmap_core::database::read_item;
+use jmap_core::user::{UserItem, UserTable};
 use sqlx::SqlitePool;
 use thiserror::Error;
 use tracing::error;
-
-#[derive(sqlx::FromRow)]
-pub struct UserItem {
-    pub id: i64,
-    pub username: String,
-}
-
-pub struct UserTable;
-impl DatabaseTable for UserTable {
-    type Item = UserItem;
-    const TABLE_NAME: &'static str = "users";
-    const COLUMN_NAME: &'static str = "*";
-}
 
 #[derive(Error, Debug)]
 pub enum UsersError {
@@ -45,8 +33,6 @@ impl IntoResponse for UsersError {
     }
 }
 
-impl UserItem {
-    pub async fn from(user_id: i64, database: &SqlitePool) -> Result<Self, UsersError> {
-        Ok(read_item::<UserTable>("id", user_id.to_string(), database).await?)
-    }
+pub async fn user_from(user_id: i64, database: &SqlitePool) -> Result<UserItem, UsersError> {
+    Ok(read_item::<UserTable>("id", user_id.to_string(), database).await?)
 }

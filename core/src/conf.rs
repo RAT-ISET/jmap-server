@@ -3,7 +3,7 @@
 // Licensed under the MIT.
 // https://github.com/RAT-ISET/jmap-server
 // ==============================================================
-// Path /src/conf.rs
+// Path /core/src/conf.rs
 // JMAP server configuration.
 
 use serde::Deserialize;
