@@ -12,7 +12,7 @@ use axum::http::header::AUTHORIZATION;
 use axum::http::request::Parts;
 use axum::http::{StatusCode, header};
 use axum::response::{IntoResponse, Response};
-use jmap_core::database::{DatabaseTable, read_where_all};
+use jmap_core::database::{DatabaseTable, read_all};
 use jmap_core::token::*;
 use std::sync::Arc;
 use thiserror::Error;
@@ -83,7 +83,7 @@ impl FromRequestParts<Arc<JmapServerState>> for TokenList {
         state: &Arc<JmapServerState>,
     ) -> Result<Self, Self::Rejection> {
         let token = get_token(parts)?.0;
-        let users = read_where_all::<TokenTable>("token", token, &state.database).await?;
+        let users = read_all::<TokenTable>(vec![("token", token)], &state.database).await?;
         if users.is_empty() {
             Err(TokenError::NotFoundUser)
         } else {

@@ -8,8 +8,8 @@
 
 use crate::jmap::SERVER_ERROR;
 use axum::response::{IntoResponse, Response};
-use jmap_core::account::{UserItem, UserTable};
-use jmap_core::database::read_where_item;
+use jmap_core::account::{AccountItem, AccountTable};
+use jmap_core::database::read_item;
 use sqlx::SqlitePool;
 use thiserror::Error;
 use tracing::error;
@@ -33,6 +33,6 @@ impl IntoResponse for UsersError {
     }
 }
 
-pub async fn user_from(user_id: i64, database: &SqlitePool) -> Result<UserItem, UsersError> {
-    Ok(read_where_item::<UserTable>("id", user_id.to_string(), database).await?)
+pub async fn user_from(user_id: i64, database: &SqlitePool) -> Result<AccountItem, UsersError> {
+    Ok(read_item::<AccountTable>(vec![("id", user_id.to_string())], database).await?)
 }

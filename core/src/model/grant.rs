@@ -7,6 +7,7 @@
 // JMAP token grant.
 
 use crate::database::DatabaseTable;
+use std::fmt::Display;
 
 #[derive(sqlx::FromRow)]
 pub struct GrantItem {
@@ -21,4 +22,14 @@ impl DatabaseTable for GrantTable {
     type Item = GrantItem;
     const TABLE_NAME: &'static str = "TokenGrant";
     const COLUMN_NAME: &'static str = "*";
+}
+
+impl Display for GrantItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "[E{}, Personal:{} OnlyRead:{}]",
+            self.email_id, self.is_personal, self.is_read_only
+        )
+    }
 }

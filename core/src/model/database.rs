@@ -8,7 +8,7 @@
 
 use crate::conf::ConfigDatabase;
 use sqlx::sqlite::SqliteRow;
-use sqlx::{FromRow, QueryBuilder, SqlitePool};
+use sqlx::{FromRow, QueryBuilder, Sqlite, SqlitePool};
 use std::env::current_dir;
 use tracing::debug;
 
@@ -25,18 +25,6 @@ pub trait DatabaseTable {
     const COLUMN_NAME: &'static str;
 }
 
-fn get_command_where<T>(name: &str) -> String
-where
-    T: DatabaseTable,
-{
-    format!(
-        "SELECT {} FROM {} WHERE {} = ",
-        T::COLUMN_NAME,
-        T::TABLE_NAME,
-        name
-    )
-}
-
 fn get_command<T>() -> String
 where
     T: DatabaseTable,
@@ -44,45 +32,43 @@ where
     format!("SELECT {} FROM {}", T::COLUMN_NAME, T::TABLE_NAME)
 }
 
-pub async fn read_where_item<T>(
-    name: &str,
-    value: String,
+fn read_query<T>(filter: Vec<(&str, String)>, source: &SqlitePool) -> QueryBuilder<Sqlite>
+where
+    T: DatabaseTable,
+{
+    let mut builder = QueryBuilder::new(get_command::<T>());
+    if !filter.is_empty() {
+        builder.push("WHERE ");
+        let mut separated = builder.separated(" AND ");
+        filter.iter().for_each(|(k, v)| {
+            separated.push(k).push(" = ").push_bind(v);
+        });
+    }
+    builder
+}
+
+pub async fn read_item<T>(
+    filter: Vec<(&str, String)>,
     source: &SqlitePool,
 ) -> Result<T::Item, sqlx::Error>
 where
     T: DatabaseTable,
 {
-    let result = QueryBuilder::new(get_command_where::<T>(name))
-        .push_bind(value)
+    Ok(read_query::<T>(filter, source)
         .build_query_as::<T::Item>()
         .fetch_one(source)
-        .await?;
-    Ok(result)
+        .await?)
 }
 
-pub async fn read_where_all<T>(
-    name: &str,
-    value: String,
+pub async fn read_all<T>(
+    filter: Vec<(&str, String)>,
     source: &SqlitePool,
 ) -> Result<Vec<T::Item>, sqlx::Error>
 where
     T: DatabaseTable,
 {
-    let result = QueryBuilder::new(get_command_where::<T>(name))
-        .push_bind(value)
+    Ok(read_query::<T>(filter, source)
         .build_query_as::<T::Item>()
         .fetch_all(source)
-        .await?;
-    Ok(result)
-}
-
-pub async fn read_all<T>(source: &SqlitePool) -> Result<Vec<T::Item>, sqlx::Error>
-where
-    T: DatabaseTable,
-{
-    let result = QueryBuilder::new(get_command::<T>())
-        .build_query_as::<T::Item>()
-        .fetch_all(source)
-        .await?;
-    Ok(result)
+        .await?)
 }

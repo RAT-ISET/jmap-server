@@ -7,16 +7,23 @@
 // JMAP account.
 
 use crate::database::DatabaseTable;
+use std::fmt::Display;
 
 #[derive(sqlx::FromRow)]
-pub struct UserItem {
+pub struct AccountItem {
     pub id: i64,
     pub username: String,
 }
 
-pub struct UserTable;
-impl DatabaseTable for UserTable {
-    type Item = UserItem;
-    const TABLE_NAME: &'static str = "User";
+pub struct AccountTable;
+impl DatabaseTable for AccountTable {
+    type Item = AccountItem;
+    const TABLE_NAME: &'static str = "Account";
     const COLUMN_NAME: &'static str = "*";
+}
+
+impl Display for AccountItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[A{}] Name: {}", self.id, self.username)
+    }
 }

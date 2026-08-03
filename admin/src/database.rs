@@ -7,7 +7,7 @@
 // Database linker.
 
 use jmap_core::conf::ConfigDatabase;
-use jmap_core::database::read_where_item;
+use jmap_core::database::read_item;
 use jmap_core::token::TokenTable;
 use sqlx::{SqlitePool, query};
 use std::env::current_dir;
@@ -64,7 +64,7 @@ pub async fn insert_token(
         .bind(owner)
         .execute(source)
         .await?;
-    let token_id = read_where_item::<TokenTable>("token", token, source)
+    let token_id = read_item::<TokenTable>(vec![("token", token)], source)
         .await?
         .id;
     for item in permission {

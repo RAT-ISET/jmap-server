@@ -7,9 +7,12 @@
 // Main of the project.
 
 use crate::database::init;
-use clap::{value_parser, Arg, ArgAction, Command};
+use clap::{Arg, ArgAction, ArgMatches, Command, value_parser};
+use jmap_core::account::AccountTable;
 use jmap_core::conf::Config;
-use jmap_core::database::open;
+use jmap_core::database::{open, read_all};
+use jmap_core::email::EmailTable;
+use jmap_core::token::{TokenItemDisplayer, TokenTable};
 use std::env;
 use std::fs::read_to_string;
 use std::sync::Arc;
@@ -43,7 +46,7 @@ async fn main() {
                 Command::new("init").about("Initialize the SQLite file")
             )
             .subcommand(
-                Command::new("add").about("Add something")
+                Command::new("add").about("Add account or email")
                     .subcommand(
                         Command::new("account").about("Add the account").arg(
                             Arg::new("name")
@@ -64,6 +67,58 @@ async fn main() {
                                 .help("Email owner ID")
                                 .value_name("OWNER")
                                 .required(true),
+                        )
+                    )
+            )
+            .subcommand(
+                Command::new("list").about("List account, email or token")
+                    .subcommand(
+                        Command::new("account").about("List the account").arg(
+                            Arg::new("username")
+                                .help("Account name")
+                                .long("name")
+                                .value_name("NAME"),
+                        ).arg(
+                            Arg::new("id")
+                                .help("Account ID")
+                                .long("id")
+                                .value_name("ID"),
+                        )
+                    )
+                    .subcommand(
+                        Command::new("email").about("List the email").arg(
+                            Arg::new("name")
+                                .help("Email name")
+                                .long("name")
+                                .value_name("NAME")
+                        ).arg(
+                            Arg::new("id")
+                                .help("Email ID")
+                                .long("id")
+                                .value_name("ID"),
+                        ).arg(
+                            Arg::new("owner")
+                                .help("Email owner")
+                                .long("owner")
+                                .value_name("OWNER"),
+                        )
+                    )
+                    .subcommand(
+                        Command::new("token").about("List the token").arg(
+                            Arg::new("token")
+                                .help("Token value")
+                                .long("value")
+                                .value_name("VALUE")
+                        ).arg(
+                            Arg::new("id")
+                                .help("Token ID")
+                                .long("id")
+                                .value_name("ID"),
+                        ).arg(
+                            Arg::new("user_id")
+                                .help("Token owner")
+                                .long("owner")
+                                .value_name("OWNER"),
                         )
                     )
             )
@@ -114,6 +169,33 @@ async fn main() {
                 }
             }
         }
+        Some(("list", sub)) => {
+            let source = open(&config.database).await.unwrap();
+            match sub.subcommand() {
+                Some(("account", c)) => read_all::<AccountTable>(build_query(c), &source)
+                    .await
+                    .unwrap()
+                    .iter()
+                    .for_each(|item| println!("{}", item)),
+                Some(("email", c)) => read_all::<EmailTable>(build_query(c), &source)
+                    .await
+                    .unwrap()
+                    .iter()
+                    .for_each(|item| println!("{}", item)),
+                Some(("token", c)) => {
+                    for item in read_all::<TokenTable>(build_query(c), &source)
+                        .await
+                        .unwrap()
+                    {
+                        println!("{}", TokenItemDisplayer::new(&item, &source).await.unwrap())
+                    }
+                }
+                _ => {
+                    error!("No subcommand provided");
+                    return;
+                }
+            }
+        }
         _ => {
             error!("No subcommand provided");
             return;
@@ -121,8 +203,17 @@ async fn main() {
     }
 }
 
-// TODO(list_account): List the account.
-// TODO(list_email): List the email.
+fn build_query(matches: &ArgMatches) -> Vec<(&str, String)> {
+    let mut result = Vec::new();
+    for id in matches.ids() {
+        let name = id.as_str();
+        if let Some(value) = matches.get_one::<String>(name) {
+            result.push((name, value.to_string()))
+        }
+    }
+    result
+}
+
 // TODO(create_token): Create the token.
 // TODO(link_token): Link the token and email.
 // TODO(delete_token): Delete the token.
