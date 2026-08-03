@@ -6,8 +6,8 @@
 // Path /core/src/model/mod.rs
 // Module for model.
 
-pub mod database;
 pub mod account;
+pub mod database;
 pub mod email;
-pub mod token;
 pub mod grant;
+pub mod token;

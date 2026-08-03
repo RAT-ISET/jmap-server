@@ -41,11 +41,7 @@ fn get_command<T>() -> String
 where
     T: DatabaseTable,
 {
-    format!(
-        "SELECT {} FROM {}",
-        T::COLUMN_NAME,
-        T::TABLE_NAME
-    )
+    format!("SELECT {} FROM {}", T::COLUMN_NAME, T::TABLE_NAME)
 }
 
 pub async fn read_where_item<T>(
@@ -80,9 +76,7 @@ where
     Ok(result)
 }
 
-pub async fn read_all<T>(
-    source: &SqlitePool,
-) -> Result<Vec<T::Item>, sqlx::Error>
+pub async fn read_all<T>(source: &SqlitePool) -> Result<Vec<T::Item>, sqlx::Error>
 where
     T: DatabaseTable,
 {
@@ -92,4 +86,3 @@ where
         .await?;
     Ok(result)
 }
-

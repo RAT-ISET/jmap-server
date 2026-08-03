@@ -8,8 +8,8 @@
 
 use crate::jmap::SERVER_ERROR;
 use axum::response::{IntoResponse, Response};
-use jmap_core::database::read_where_item;
 use jmap_core::account::{UserItem, UserTable};
+use jmap_core::database::read_where_item;
 use sqlx::SqlitePool;
 use thiserror::Error;
 use tracing::error;
