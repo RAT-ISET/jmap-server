@@ -5,6 +5,10 @@ GET http://{{host}}:{{port}}/
 # @no-redirect
 GET http://{{host}}:{{port}}/.well-known/jmap
 
+### Session Test System
+GET http://{{host}}:{{port}}/jmap/session
+Authorization: Bearer test123
+
 ### Session Test 1A
 GET http://{{host}}:{{port}}/jmap/session
 Authorization: Bearer test123

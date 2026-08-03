@@ -18,7 +18,7 @@ CREATE TABLE Token (
     token TEXT NOT NULL UNIQUE,
 
     FOREIGN KEY(user_id)
-        REFERENCES users(id)
+        REFERENCES Account(id)
 );
 
 CREATE TABLE TokenGrant (
@@ -29,7 +29,7 @@ CREATE TABLE TokenGrant (
     is_personal BOOLEAN NOT NULL,
 
     PRIMARY KEY (token_id, email_id),
-    
+
     FOREIGN KEY (token_id) REFERENCES Token(id),
     FOREIGN KEY (email_id) REFERENCES Email(id)
 )

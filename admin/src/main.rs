@@ -44,7 +44,7 @@ async fn main() {
         .after_help("Author: Team ISET <team@ratiset.org>\n\nLicense:\n  Copyright (c) 2026 Team ISET\n  Licensed under the MIT.\n\n  https://github.com/RAT-ISET/jmap-server")
         .arg_required_else_help(true)
         .get_matches();
-    info!(target: "arg", argv = ?std::env::args().collect::<Vec<_>>(), "exec");
+    info!(target: "arg", argv = ?env::args().collect::<Vec<_>>(), "exec");
     if matches.get_flag("version") {
         println!(
             "PA Deploy Client {}\nCopyright (c) 2026 Phiarc Team and St Rangeset\nLicensed under the GPLv3 or later License.",
@@ -74,3 +74,13 @@ async fn main() {
         }
     }
 }
+
+// TODO(add_account): Add the account.
+// TODO(add_email): Add the email.
+// TODO(list_account): List the account.
+// TODO(list_email): List the email.
+// TODO(create_token): Create the token.
+// TODO(link_token): Link the token and email.
+// TODO(delete_token): Delete the token.
+
+// TODO(init_test): Add the test initialization.

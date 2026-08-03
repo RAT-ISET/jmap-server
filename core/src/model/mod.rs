@@ -7,5 +7,7 @@
 // Module for model.
 
 pub mod database;
+pub mod account;
+pub mod email;
 pub mod token;
-pub mod user;
+pub mod grant;

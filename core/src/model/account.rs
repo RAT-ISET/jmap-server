@@ -3,8 +3,8 @@
 // Licensed under the MIT.
 // https://github.com/RAT-ISET/jmap-server
 // ==============================================================
-// Path /core/src/jmap/user.rs
-// JMAP user.
+// Path /core/src/jmap/account.rs
+// JMAP account.
 
 use crate::database::DatabaseTable;
 
@@ -17,6 +17,6 @@ pub struct UserItem {
 pub struct UserTable;
 impl DatabaseTable for UserTable {
     type Item = UserItem;
-    const TABLE_NAME: &'static str = "users";
+    const TABLE_NAME: &'static str = "User";
     const COLUMN_NAME: &'static str = "*";
 }

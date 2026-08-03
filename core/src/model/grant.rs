@@ -3,22 +3,22 @@
 // Licensed under the MIT.
 // https://github.com/RAT-ISET/jmap-server
 // ==============================================================
-// Path /core/src/jmap/token.rs
-// JMAP token.
+// Path /core/src/jmap/grant.rs
+// JMAP token grant.
 
 use crate::database::DatabaseTable;
-use thiserror::Error;
 
 #[derive(sqlx::FromRow)]
-pub struct TokenItem {
-    pub id: i64,
-    pub user_id: i64,
-    pub token: String,
+pub struct GrantItem {
+    pub token_id: i64,
+    pub email_id: i64,
+    pub is_personal: bool,
+    pub is_read_only: bool,
 }
 
-pub struct TokenTable;
-impl DatabaseTable for TokenTable {
-    type Item = TokenItem;
-    const TABLE_NAME: &'static str = "Token";
+pub struct GrantTable;
+impl DatabaseTable for GrantTable {
+    type Item = GrantItem;
+    const TABLE_NAME: &'static str = "TokenGrant";
     const COLUMN_NAME: &'static str = "*";
 }
