@@ -23,7 +23,7 @@ mod model;
 
 #[tokio::main]
 async fn main() {
-    init_log();
+    jmap_core::init_log();
     debug!("Logging started");
 
     let config_path = match env::args().nth(1) {
@@ -52,12 +52,4 @@ async fn main() {
     .run()
     .await
     .unwrap();
-}
-
-fn init_log() {
-    fmt()
-        .with_env_filter(
-            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
-        )
-        .init();
 }
