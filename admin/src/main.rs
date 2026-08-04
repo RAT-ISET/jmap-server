@@ -6,11 +6,11 @@
 // Path /admin/src/main.rs
 // Main of the project.
 
-use crate::database::init;
+use crate::database::{init, trans_email};
 use clap::{Arg, ArgAction, ArgMatches, Command, value_parser};
 use jmap_core::account::AccountTable;
 use jmap_core::conf::Config;
-use jmap_core::database::{open, read_all};
+use jmap_core::database::{delete_token, open, read_all};
 use jmap_core::email::EmailTable;
 use jmap_core::token::{TokenItemDisplayer, TokenTable};
 use std::env;
@@ -99,6 +99,24 @@ async fn main() {
                                 .value_delimiter(',')
                                 .action(ArgAction::Append)
                                 .required_unless_present("user"),
+                        )
+                    )
+            ).subcommand(
+                Command::new("delete").about("Delete email or token")
+                    .subcommand(
+                        Command::new("email").about("Delete the email").arg(
+                            Arg::new("id")
+                                .value_parser(value_parser!(i64))
+                                .help("Email ID")
+                                .value_name("ID"),
+                        )
+                    )
+                    .subcommand(
+                        Command::new("token").about("Delete the token").arg(
+                            Arg::new("id")
+                                .value_parser(value_parser!(i64))
+                                .help("Token ID")
+                                .value_name("ID"),
                         )
                     )
             )
@@ -219,6 +237,21 @@ async fn main() {
                 }
             }
         }
+        Some(("delete", sub)) => {
+            let source = open(&config.database).await.unwrap();
+            match sub.subcommand() {
+                Some(("email", c)) => trans_email(c.get_one::<i64>("id").unwrap(), -1, &source)
+                    .await
+                    .unwrap(),
+                Some(("token", c)) => delete_token(c.get_one::<i64>("id").unwrap(), &source)
+                    .await
+                    .unwrap(),
+                _ => {
+                    error!("No subcommand provided");
+                    return;
+                }
+            }
+        }
         Some(("list", sub)) => {
             let source = open(&config.database).await.unwrap();
             match sub.subcommand() {
@@ -263,7 +296,5 @@ fn build_query(matches: &ArgMatches) -> Vec<(&str, String)> {
     }
     result
 }
-
-// TODO(delete_token): Delete the token.
 
 // TODO(init_test): Add the test initialization.

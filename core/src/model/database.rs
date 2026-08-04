@@ -7,11 +7,11 @@
 // Database linker.
 
 use crate::conf::ConfigDatabase;
+use crate::token::TokenTable;
 use sqlx::sqlite::SqliteRow;
-use sqlx::{query, FromRow, QueryBuilder, Sqlite, SqlitePool};
+use sqlx::{FromRow, QueryBuilder, Sqlite, SqlitePool, query};
 use std::env::current_dir;
 use tracing::debug;
-use crate::token::TokenTable;
 
 pub async fn open(config: &ConfigDatabase) -> Result<SqlitePool, sqlx::Error> {
     debug!("Read path: {}/{}", current_dir()?.display(), &config.file);
@@ -99,11 +99,14 @@ pub async fn insert_token(
     Ok(())
 }
 
-pub async fn delete_token(
-    id: i64,
-    source: &SqlitePool,
-) -> Result<(), sqlx::Error> {
-    query("DELETE FROM TokenGrant WHERE token_id = ?").bind(id).execute(source).await?;
-    query("DELETE FROM Token WHERE id = ?").bind(id).execute(source).await?;
+pub async fn delete_token(id: &i64, source: &SqlitePool) -> Result<(), sqlx::Error> {
+    query("DELETE FROM TokenGrant WHERE token_id = ?")
+        .bind(id)
+        .execute(source)
+        .await?;
+    query("DELETE FROM Token WHERE id = ?")
+        .bind(id)
+        .execute(source)
+        .await?;
     Ok(())
 }

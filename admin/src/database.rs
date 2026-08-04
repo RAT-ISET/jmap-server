@@ -7,8 +7,6 @@
 // Database linker.
 
 use jmap_core::conf::ConfigDatabase;
-use jmap_core::database::read_item;
-use jmap_core::token::TokenTable;
 use sqlx::{SqlitePool, query};
 use std::env::current_dir;
 use tracing::debug;
@@ -20,9 +18,17 @@ pub async fn init(config: &ConfigDatabase) -> Result<SqlitePool, sqlx::Error> {
         .create_if_missing(true);
     let pool = SqlitePool::connect_with(options).await?;
     sqlx::migrate!("./migrations").run(&pool).await?;
+    insert_disable(&pool).await?;
     insert_system(&pool).await?;
     insert_email("sys".to_string(), 0, &pool).await?;
     Ok(pool)
+}
+
+async fn insert_disable(source: &SqlitePool) -> Result<(), sqlx::Error> {
+    query("INSERT INTO Account (id, username) VALUES (-1, \"REMOVED\")")
+        .execute(source)
+        .await?;
+    Ok(())
 }
 
 async fn insert_system(source: &SqlitePool) -> Result<(), sqlx::Error> {
@@ -54,7 +60,7 @@ pub async fn insert_email(
 }
 
 pub async fn trans_email(
-    email: i64,
+    email: &i64,
     new_owner: i64,
     source: &SqlitePool,
 ) -> Result<(), sqlx::Error> {
@@ -69,5 +75,3 @@ pub async fn trans_email(
         .await?;
     Ok(())
 }
-
-// TODO(add_token_from_other): Add the token by API or other method.
