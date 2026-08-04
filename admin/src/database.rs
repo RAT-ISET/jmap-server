@@ -73,6 +73,30 @@ pub async fn insert_token(
     Ok(())
 }
 
-// TODO(change_owner): Change the owner for email.
-// TODO(delete_token): Delete the token.
+pub async fn trans_email(
+    email: i64,
+    new_owner: i64,
+    source: &SqlitePool,
+) -> Result<(), sqlx::Error> {
+    query("UPDATE Email SET owner = ? WHERE id = ?")
+        .bind(new_owner)
+        .bind(email)
+        .execute(source)
+        .await?;
+    query("DELETE FROM TokenGrant WHERE email_id = ?")
+        .bind(email)
+        .execute(source)
+        .await?;
+    Ok(())
+}
+
+pub async fn delete_token(
+    id: i64,
+    source: &SqlitePool,
+) -> Result<(), sqlx::Error> {
+    query("DELETE FROM TokenGrant WHERE token_id = ?").bind(id).execute(source).await?;
+    query("DELETE FROM Token WHERE id = ?").bind(id).execute(source).await?;
+    Ok(())
+}
+
 // TODO(add_token_from_other): Add the token by API or other method.
