@@ -6,7 +6,7 @@
 // Path /admin/src/main.rs
 // Main of the project.
 
-use crate::database::{init, trans_email};
+use crate::database::{init, test_init, trans_email};
 use clap::{Arg, ArgAction, ArgMatches, Command, value_parser};
 use jmap_core::account::AccountTable;
 use jmap_core::conf::Config;
@@ -43,7 +43,12 @@ async fn main() {
                     .required_unless_present("version"),
             )
             .subcommand(
-                Command::new("init").about("Initialize the SQLite file")
+                Command::new("init").about("Initialize the SQLite file").arg(
+                    Arg::new("test")
+                        .long("test")
+                        .help("Debug initialize (WARNING: Please know what you are going to do!!!)")
+                        .action(ArgAction::SetTrue),
+                )
             )
             .subcommand(
                 Command::new("add").about("Add account or email")
@@ -194,8 +199,11 @@ async fn main() {
     let config: Arc<Config> =
         Arc::new(toml::from_str(read_to_string(config_path).unwrap().as_str()).unwrap());
     match matches.subcommand() {
-        Some(("init", _)) => {
-            init(&config.database).await.unwrap();
+        Some(("init", c)) => {
+            let source = init(&config.database).await.unwrap();
+            if c.get_flag("test") {
+                test_init(&source).await.unwrap();
+            }
         }
         Some(("add", sub)) => {
             let source = open(&config.database).await.unwrap();
@@ -296,5 +304,3 @@ fn build_query(matches: &ArgMatches) -> Vec<(&str, String)> {
     }
     result
 }
-
-// TODO(init_test): Add the test initialization.

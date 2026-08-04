@@ -25,3 +25,6 @@ tests/http-client.private.env.json
 # Added by cargo
 
 /target
+
+# Database
+jmap.db

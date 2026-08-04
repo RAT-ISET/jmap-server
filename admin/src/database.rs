@@ -10,6 +10,9 @@ use jmap_core::conf::ConfigDatabase;
 use sqlx::{SqlitePool, query};
 use std::env::current_dir;
 use tracing::debug;
+use jmap_core::account::AccountTable;
+use jmap_core::database::{insert_token, read_all, read_item};
+use jmap_core::email::EmailTable;
 
 pub async fn init(config: &ConfigDatabase) -> Result<SqlitePool, sqlx::Error> {
     debug!("Read path: {}/{}", current_dir()?.display(), &config.file);
@@ -22,6 +25,23 @@ pub async fn init(config: &ConfigDatabase) -> Result<SqlitePool, sqlx::Error> {
     insert_system(&pool).await?;
     insert_email("sys".to_string(), 0, &pool).await?;
     Ok(pool)
+}
+
+pub async fn test_init(source: &SqlitePool) -> Result<(), sqlx::Error> {
+    insert_account("Tester 1".to_string(), &source).await?;
+    insert_account("Tester 2".to_string(), &source).await?;
+    let id_1 = read_item::<AccountTable>(vec![("username", "Tester 1".to_string())], source).await?.id;
+    let id_2 = read_item::<AccountTable>(vec![("username", "Tester 2".to_string())], source).await?.id;
+    insert_email("test1a".to_string(), id_1, &source).await?;
+    insert_email("test1b".to_string(), id_1, &source).await?;
+    insert_email("test2".to_string(), id_2, &source).await?;
+    let email_1 = read_all::<EmailTable>(vec![("owner", id_1.to_string())], source).await?;
+    let email_1a = email_1.get(0).unwrap().id;
+    let email_1b = email_1.get(1).unwrap().id;
+    let email_2 = read_item::<EmailTable>(vec![("owner", id_2.to_string())], source).await?.id;
+    insert_token("test1token".to_string(), &id_1, vec![(&email_1a, true, false), (&email_1b, true, false)], &source).await?;
+    insert_token("test2token".to_string(), &id_2, vec![(&email_2, true, false), (&email_1b, false, true)], &source).await?;
+    Ok(())
 }
 
 async fn insert_disable(source: &SqlitePool) -> Result<(), sqlx::Error> {
