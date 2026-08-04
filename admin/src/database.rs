@@ -53,26 +53,6 @@ pub async fn insert_email(
     Ok(())
 }
 
-pub async fn insert_token(
-    token: String,
-    owner: &i64,
-    permission: Vec<(&i64, bool, bool)>,
-    source: &SqlitePool,
-) -> Result<(), sqlx::Error> {
-    query("INSERT INTO Token (token, user_id) VALUES (?, ?)")
-        .bind(&token)
-        .bind(owner)
-        .execute(source)
-        .await?;
-    let token_id = read_item::<TokenTable>(vec![("token", token)], source)
-        .await?
-        .id;
-    for item in permission {
-        query("INSERT INTO TokenGrant (token_id, email_id, is_personal, is_read_only) VALUES (?, ?, ?, ?)").bind(token_id).bind(item.0).bind(item.1).bind(item.2).execute(source).await?;
-    }
-    Ok(())
-}
-
 pub async fn trans_email(
     email: i64,
     new_owner: i64,
@@ -87,15 +67,6 @@ pub async fn trans_email(
         .bind(email)
         .execute(source)
         .await?;
-    Ok(())
-}
-
-pub async fn delete_token(
-    id: i64,
-    source: &SqlitePool,
-) -> Result<(), sqlx::Error> {
-    query("DELETE FROM TokenGrant WHERE token_id = ?").bind(id).execute(source).await?;
-    query("DELETE FROM Token WHERE id = ?").bind(id).execute(source).await?;
     Ok(())
 }
 

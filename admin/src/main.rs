@@ -204,7 +204,7 @@ async fn main() {
                     for read in c.get_many::<i64>("read").unwrap() {
                         perm.push((read, read == owner, true));
                     }
-                    database::insert_token(
+                    jmap_core::database::insert_token(
                         c.get_one::<String>("value").unwrap().to_string(),
                         owner,
                         perm,
