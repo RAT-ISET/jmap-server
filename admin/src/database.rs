@@ -55,8 +55,8 @@ pub async fn insert_email(
 
 pub async fn insert_token(
     token: String,
-    owner: i64,
-    permission: Vec<(i64, bool, bool)>,
+    owner: &i64,
+    permission: Vec<(&i64, bool, bool)>,
     source: &SqlitePool,
 ) -> Result<(), sqlx::Error> {
     query("INSERT INTO Token (token, user_id) VALUES (?, ?)")
@@ -68,7 +68,7 @@ pub async fn insert_token(
         .await?
         .id;
     for item in permission {
-        query("INSERT INTO TokenGrant (token_id, user_id, is_read_only, is_personal) VALUES (?, ?, ?, ?)").bind(token_id).bind(item.0).bind(item.1).bind(item.2).execute(source).await?;
+        query("INSERT INTO TokenGrant (token_id, email_id, is_personal, is_read_only) VALUES (?, ?, ?, ?)").bind(token_id).bind(item.0).bind(item.1).bind(item.2).execute(source).await?;
     }
     Ok(())
 }

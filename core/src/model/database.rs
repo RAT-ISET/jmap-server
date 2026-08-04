@@ -32,16 +32,21 @@ where
     format!("SELECT {} FROM {}", T::COLUMN_NAME, T::TABLE_NAME)
 }
 
-fn read_query<T>(filter: Vec<(&str, String)>, source: &SqlitePool) -> QueryBuilder<Sqlite>
+fn read_query<T>(filter: Vec<(&str, String)>) -> QueryBuilder<Sqlite>
 where
     T: DatabaseTable,
 {
     let mut builder = QueryBuilder::new(get_command::<T>());
     if !filter.is_empty() {
-        builder.push("WHERE ");
-        let mut separated = builder.separated(" AND ");
+        builder.push(" WHERE ");
+        let mut is_first = true;
         filter.iter().for_each(|(k, v)| {
-            separated.push(k).push(" = ").push_bind(v);
+            if !is_first {
+                builder.push(" AND ");
+            } else {
+                is_first = false
+            }
+            builder.push(k).push(" = ").push_bind(v);
         });
     }
     builder
@@ -54,7 +59,7 @@ pub async fn read_item<T>(
 where
     T: DatabaseTable,
 {
-    Ok(read_query::<T>(filter, source)
+    Ok(read_query::<T>(filter)
         .build_query_as::<T::Item>()
         .fetch_one(source)
         .await?)
@@ -67,7 +72,7 @@ pub async fn read_all<T>(
 where
     T: DatabaseTable,
 {
-    Ok(read_query::<T>(filter, source)
+    Ok(read_query::<T>(filter)
         .build_query_as::<T::Item>()
         .fetch_all(source)
         .await?)

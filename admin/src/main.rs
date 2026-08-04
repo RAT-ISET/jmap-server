@@ -69,6 +69,38 @@ async fn main() {
                                 .required(true),
                         )
                     )
+                    .subcommand(
+                        Command::new("token").about("Add the token").arg(
+                            Arg::new("value")
+                                .help("Token value")
+                                .value_name("VALUE")
+                                .required(true),
+                        ).arg(
+                            Arg::new("owner")
+                                .value_parser(value_parser!(i64))
+                                .help("Email owner ID")
+                                .value_name("OWNER")
+                                .required(true),
+                        ).arg(
+                            Arg::new("user")
+                                .value_parser(value_parser!(i64))
+                                .help("Email permission (all permission)")
+                                .value_name("USER")
+                                .long("user")
+                                .value_delimiter(',')
+                                .action(ArgAction::Append)
+                                .required_unless_present("read"),
+                        ).arg(
+                            Arg::new("read")
+                                .value_parser(value_parser!(i64))
+                                .help("Email permission (only read)")
+                                .value_name("READ")
+                                .long("read")
+                                .value_delimiter(',')
+                                .action(ArgAction::Append)
+                                .required_unless_present("user"),
+                        )
+                    )
             )
             .subcommand(
                 Command::new("list").about("List account, email or token")
@@ -144,7 +176,7 @@ async fn main() {
     let config: Arc<Config> =
         Arc::new(toml::from_str(read_to_string(config_path).unwrap().as_str()).unwrap());
     match matches.subcommand() {
-        Some(("init", c)) => {
+        Some(("init", _)) => {
             init(&config.database).await.unwrap();
         }
         Some(("add", sub)) => {
@@ -163,6 +195,24 @@ async fn main() {
                 )
                 .await
                 .unwrap(),
+                Some(("token", c)) => {
+                    let owner = c.get_one::<i64>("owner").unwrap();
+                    let mut perm = Vec::new();
+                    for user in c.get_many::<i64>("user").unwrap() {
+                        perm.push((user, user == owner, false));
+                    }
+                    for read in c.get_many::<i64>("read").unwrap() {
+                        perm.push((read, read == owner, true));
+                    }
+                    database::insert_token(
+                        c.get_one::<String>("value").unwrap().to_string(),
+                        owner,
+                        perm,
+                        &source,
+                    )
+                    .await
+                    .unwrap()
+                }
                 _ => {
                     error!("No subcommand provided");
                     return;
@@ -214,8 +264,6 @@ fn build_query(matches: &ArgMatches) -> Vec<(&str, String)> {
     result
 }
 
-// TODO(create_token): Create the token.
-// TODO(link_token): Link the token and email.
 // TODO(delete_token): Delete the token.
 
 // TODO(init_test): Add the test initialization.
